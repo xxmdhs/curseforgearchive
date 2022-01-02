@@ -56,6 +56,7 @@ func do(id, maxpage, start int, db *database.LevelDB) {
 		e(json.Unmarshal(b, &list))
 		idList := make([]string, 0, len(list))
 		for _, v := range list {
+			v := v
 			id := strconv.FormatFloat(v.(map[string]interface{})["id"].(float64), 'f', -1, 64)
 			idList = append(idList, id)
 			toSave("modinfo-", id, v, db)
