@@ -90,10 +90,10 @@ func get(l []string, db *database.LevelDB) error {
 			e(err)
 			e(db.Put("modfiles-"+v, b))
 		}(v)
-		if i >= 10 {
+		if i >= 15 {
 			w.Wait()
 			i = 0
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1)
 		}
 	}
 	w.Wait()
