@@ -80,7 +80,7 @@ func get(l []string, db *database.LevelDB) error {
 	for _, v := range l {
 		w.Add(1)
 		i++
-		go func() {
+		go func(v string) {
 			defer w.Done()
 			var b []byte
 			err := retry.Do(func() (err error) {
@@ -89,13 +89,14 @@ func get(l []string, db *database.LevelDB) error {
 			}, retryOpts...)
 			e(err)
 			e(db.Put("modfiles-"+v, b))
-		}()
+		}(v)
 		if i >= 10 {
 			w.Wait()
 			i = 0
 			time.Sleep(time.Second * 2)
 		}
 	}
+	w.Wait()
 	return nil
 }
 
