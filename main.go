@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/xxmdhs/curseforgearchive/curseapi"
 	"github.com/xxmdhs/curseforgearchive/database"
 )
@@ -27,7 +29,9 @@ func main() {
 		start := 0
 		if !v.Reacquire {
 			b, err := db.Get("config-" + strconv.Itoa(v.ID))
-			e(err)
+			if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
+				e(err)
+			}
 			start, err = strconv.Atoi(string(b))
 			e(err)
 		}
