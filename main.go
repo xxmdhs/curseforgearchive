@@ -88,7 +88,7 @@ func get(l []string, db *database.LevelDB) error {
 				return err
 			}, retryOpts...)
 			e(err)
-			toSave("modfiles-", v, b, db)
+			e(db.Put("modfiles-"+v, b))
 		}()
 		if i >= 10 {
 			w.Wait()
