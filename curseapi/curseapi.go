@@ -10,8 +10,8 @@ import (
 
 func Searchmod(key string, index, sectionId int) ([]byte, error) {
 	aurl := `https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=432&index=` +
-		strconv.Itoa(index) + `&pageSize=50&searchFilter=` + url.QueryEscape(key) + `&sectionId=` +
-		strconv.Itoa(sectionId) + `&sort=0`
+		strconv.Itoa(index) + `&pageSize=20&searchFilter=` + url.QueryEscape(key) + `&sectionId=` +
+		strconv.Itoa(sectionId) + `&sort=5`
 	b, err := httpget(aurl)
 	if err != nil {
 		return nil, fmt.Errorf("Searchmod: %w", err)
