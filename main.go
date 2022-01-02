@@ -63,7 +63,7 @@ func do(id, maxpage, start int, db *database.LevelDB) {
 		get(idList, db)
 
 		db.Put("config-"+sid, []byte(strconv.Itoa(i)))
-		log.Panicf("id: %d, page: %d, maxpage: %d", id, i, maxpage)
+		log.Printf("id: %d, page: %d, maxpage: %d", id, i, maxpage)
 	}
 }
 
