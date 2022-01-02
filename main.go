@@ -29,11 +29,14 @@ func main() {
 		start := 0
 		if !v.Reacquire {
 			b, err := db.Get("config-" + strconv.Itoa(v.ID))
-			if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
+			if err != nil {
+				if !errors.Is(err, leveldb.ErrNotFound) {
+					e(err)
+				}
+			} else {
+				start, err = strconv.Atoi(string(b))
 				e(err)
 			}
-			start, err = strconv.Atoi(string(b))
-			e(err)
 		}
 		do(v.ID, v.Page, start, db)
 	}
