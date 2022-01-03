@@ -61,7 +61,7 @@ func do(maxpage, start int, db *database.LevelDB) {
 		if a >= 15 {
 			w.Wait()
 			a = 0
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 300)
 			db.Put("config", []byte(strconv.Itoa(i)))
 			log.Printf("%d/%d", i, maxpage)
 		}
