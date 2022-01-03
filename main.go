@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -49,7 +50,11 @@ func do(maxpage, start int, db *database.LevelDB) {
 		go func() {
 			defer w.Done()
 			addonID := strconv.Itoa(i)
-			save(addonID, db, curseapi.AddonInfo, "modinfo-")
+			err := save(addonID, db, curseapi.AddonInfo, "modinfo-")
+			if err != nil {
+				log.Println(addonID, err)
+				return
+			}
 			save(addonID, db, curseapi.Addonfiles, "modfiles-")
 		}()
 		if a >= 15 {
@@ -57,19 +62,20 @@ func do(maxpage, start int, db *database.LevelDB) {
 			a = 0
 			time.Sleep(time.Second * 1)
 			db.Put("config", []byte(strconv.Itoa(i)))
+			log.Printf("%d/%d", i, maxpage)
 		}
 	}
 	w.Wait()
 }
 
-func save(addonID string, db *database.LevelDB, getfunc func(string) ([]byte, error), keyPrefix string) {
+func save(addonID string, db *database.LevelDB, getfunc func(string) ([]byte, error), keyPrefix string) error {
 	_, err := db.Get(keyPrefix + addonID)
 	if err != nil {
 		if !errors.Is(err, leveldb.ErrNotFound) {
 			e(err)
 		}
 	} else {
-		return
+		return nil
 	}
 
 	var b []byte
@@ -77,8 +83,16 @@ func save(addonID string, db *database.LevelDB, getfunc func(string) ([]byte, er
 		b, err = getfunc(addonID)
 		return err
 	}, retryOpts...)
+
+	var httperr curseapi.ErrHttpCode
+	if errors.As(err, &httperr) {
+		if httperr.Code == 404 {
+			return fmt.Errorf("save: %w", err)
+		}
+	}
 	e(err)
 	e(db.Put(keyPrefix+addonID, b))
+	return nil
 }
 
 func e(err error) {
@@ -92,5 +106,12 @@ var retryOpts = []retry.Option{
 	retry.Delay(time.Second * 2),
 	retry.OnRetry(func(n uint, err error) {
 		log.Printf("retry %d: %v", n, err)
+	}),
+	retry.RetryIf(func(e error) bool {
+		var httperr curseapi.ErrHttpCode
+		if errors.As(e, &httperr) {
+			return httperr.Code != 404
+		}
+		return true
 	}),
 }
