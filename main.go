@@ -84,10 +84,13 @@ func save(addonID string, db *database.LevelDB, getfunc func(string) ([]byte, er
 		return err
 	}, retryOpts...)
 
-	var httperr curseapi.ErrHttpCode
-	if errors.As(err, &httperr) {
-		if httperr.Code == 404 {
-			return fmt.Errorf("save: %w", err)
+	re := err.(*retry.Error)
+	for _, v := range re.WrappedErrors() {
+		var httperr curseapi.ErrHttpCode
+		if errors.As(v, &httperr) {
+			if httperr.Code == 404 {
+				return fmt.Errorf("save: %w", err)
+			}
 		}
 	}
 	e(err)
