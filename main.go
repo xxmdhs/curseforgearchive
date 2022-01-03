@@ -45,6 +45,7 @@ func do(maxpage, start int, db *database.LevelDB) {
 	a := 0
 	w := sync.WaitGroup{}
 	for i := start; i <= maxpage; i++ {
+		i := i
 		w.Add(1)
 		a++
 		go func() {
