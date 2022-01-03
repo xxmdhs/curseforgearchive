@@ -25,80 +25,60 @@ func main() {
 	e(err)
 	defer db.Close()
 
-	for _, v := range c.SelID {
-		start := 0
-		if !v.Reacquire {
-			b, err := db.Get("config-" + strconv.Itoa(v.ID))
-			if err != nil {
-				if !errors.Is(err, leveldb.ErrNotFound) {
-					e(err)
-				}
-			} else {
-				start, err = strconv.Atoi(string(b))
+	start := 0
+	if !c.Reacquire {
+		b, err := db.Get("config")
+		if err != nil {
+			if !errors.Is(err, leveldb.ErrNotFound) {
 				e(err)
 			}
-		}
-		do(v.ID, v.Page, start, db)
-	}
-}
-
-func do(id, maxpage, start int, db *database.LevelDB) {
-	sid := strconv.Itoa(id)
-	for i := start; i <= maxpage; i++ {
-		var b []byte
-		err := retry.Do(func() (err error) {
-			b, err = curseapi.Searchmod("", i, id)
-			return err
-		}, retryOpts...)
-		e(err)
-
-		var list []interface{}
-		e(json.Unmarshal(b, &list))
-		idList := make([]string, 0, len(list))
-		for _, v := range list {
-			v := v
-			id := strconv.FormatFloat(v.(map[string]interface{})["id"].(float64), 'f', -1, 64)
-			idList = append(idList, id)
-			toSave("modinfo-", id, v, db)
-		}
-		get(idList, db)
-
-		db.Put("config-"+sid, []byte(strconv.Itoa(i)))
-		log.Printf("id: %d, page: %d, maxpage: %d", id, i, maxpage)
-	}
-}
-
-func toSave(key, id string, data interface{}, db *database.LevelDB) {
-	b, err := json.Marshal(data)
-	e(err)
-	err = db.Put(key+id, b)
-	e(err)
-}
-
-func get(l []string, db *database.LevelDB) error {
-	i := 0
-	w := sync.WaitGroup{}
-	for _, v := range l {
-		w.Add(1)
-		i++
-		go func(v string) {
-			defer w.Done()
-			var b []byte
-			err := retry.Do(func() (err error) {
-				b, err = curseapi.Addonfiles(v)
-				return err
-			}, retryOpts...)
+		} else {
+			start, err = strconv.Atoi(string(b))
 			e(err)
-			e(db.Put("modfiles-"+v, b))
-		}(v)
-		if i >= 15 {
+		}
+	}
+	do(c.MaxID, start, db)
+}
+
+func do(maxpage, start int, db *database.LevelDB) {
+	a := 0
+	w := sync.WaitGroup{}
+	for i := start; i <= maxpage; i++ {
+		w.Add(1)
+		a++
+		go func() {
+			defer w.Done()
+			addonID := strconv.Itoa(i)
+			save(addonID, db, curseapi.AddonInfo, "modinfo-")
+			save(addonID, db, curseapi.Addonfiles, "modfiles-")
+		}()
+		if a >= 15 {
 			w.Wait()
-			i = 0
+			a = 0
 			time.Sleep(time.Second * 1)
+			db.Put("config", []byte(strconv.Itoa(i)))
 		}
 	}
 	w.Wait()
-	return nil
+}
+
+func save(addonID string, db *database.LevelDB, getfunc func(string) ([]byte, error), keyPrefix string) {
+	_, err := db.Get(keyPrefix + addonID)
+	if err != nil {
+		if !errors.Is(err, leveldb.ErrNotFound) {
+			e(err)
+		}
+	} else {
+		return
+	}
+
+	var b []byte
+	err = retry.Do(func() (err error) {
+		b, err = getfunc(addonID)
+		return err
+	}, retryOpts...)
+	e(err)
+	e(db.Put(keyPrefix+addonID, b))
 }
 
 func e(err error) {

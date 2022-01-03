@@ -19,6 +19,15 @@ func Searchmod(key string, index, sectionId int) ([]byte, error) {
 	return b, nil
 }
 
+func AddonInfo(addonID string) ([]byte, error) {
+	aurl := `https://addons-ecs.forgesvc.net/api/v2/addon/` + addonID
+	b, err := httpget(aurl)
+	if err != nil {
+		return nil, fmt.Errorf("AddonInfo: %w", err)
+	}
+	return b, nil
+}
+
 func Addonfiles(addonID string) ([]byte, error) {
 	aurl := `https://addons-ecs.forgesvc.net/api/v2/addon/` + addonID + `/files`
 	b, err := httpget(aurl)

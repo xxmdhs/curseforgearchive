@@ -1,11 +1,6 @@
 package main
 
 type config struct {
-	SelID []idConfig
-}
-
-type idConfig struct {
-	ID        int
-	Page      int
+	MaxID     int
 	Reacquire bool
 }
