@@ -208,8 +208,9 @@ func (s *server) modfile(downloadUrl bool) func(w http.ResponseWriter, r *http.R
 			if !ok {
 				continue
 			}
-			id, _ := o["id"].(string)
-			if id == fileId {
+			id, _ := o["id"].(float64)
+			ids := strconv.FormatFloat(id, 'f', -1, 64)
+			if ids == fileId {
 				d = o
 				break
 			}
