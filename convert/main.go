@@ -57,7 +57,7 @@ type modinfo struct {
 	DateCreated        string                 `json:"dateCreated"`
 	DateModified       string                 `json:"dateModified"`
 	DateReleased       string                 `json:"dateReleased"`
-	DownloadCount      int                    `json:"downloadCount"`
+	DownloadCount      float64                `json:"downloadCount"`
 	GameID             int                    `json:"gameId"`
 	ID                 int                    `json:"id"`
 	Name               string                 `json:"name"`
