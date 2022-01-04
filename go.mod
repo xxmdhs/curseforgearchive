@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/avast/retry-go/v4 v4.0.2
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/syndtr/goleveldb v1.0.0
 )
 
