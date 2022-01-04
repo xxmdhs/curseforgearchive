@@ -38,15 +38,15 @@ func NewSqlite(path string) (*Sqlite, error) {
 }
 
 type ModInfo struct {
-	ID                 int    `db:"id"`
-	Name               string `db:"name"`
-	Downloads          int    `db:"downloadCount"`
-	GameID             int    `db:"gameId"`
-	GameCategoryID     int    `db:"gameCategoryId"`
-	GamePopularityRank int    `db:"gamePopularityRank"`
-	DateCreated        int64  `db:"dateCreated"`
-	DateReleased       int64  `db:"dateReleased"`
-	DateModified       int64  `db:"dateModified"`
+	ID                 int     `db:"id"`
+	Name               string  `db:"name"`
+	Downloads          float64 `db:"downloadCount"`
+	GameID             int     `db:"gameId"`
+	GameCategoryID     int     `db:"gameCategoryId"`
+	GamePopularityRank int     `db:"gamePopularityRank"`
+	DateCreated        int64   `db:"dateCreated"`
+	DateReleased       int64   `db:"dateReleased"`
+	DateModified       int64   `db:"dateModified"`
 }
 
 func (s *Sqlite) SetModInfo(m ModInfo) error {
