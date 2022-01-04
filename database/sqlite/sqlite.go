@@ -58,3 +58,43 @@ func (s *Sqlite) SetModInfo(m ModInfo) error {
 	}
 	return nil
 }
+
+func (s *Sqlite) Close() error {
+	err := s.db.Close()
+	if err != nil {
+		return fmt.Errorf("Close: %w", err)
+	}
+	return nil
+}
+
+func (s *Sqlite) Search(keyword string, limit, gameId, offset, sectionId int, ORDERBy string) ([]ModInfo, error) {
+	var mods []ModInfo
+	var r *sqlx.Rows
+	var err error
+	if sectionId == 0 {
+		r, err = s.db.NamedQuery(`SELECT * FROM modinfo WHERE name LIKE :keyword AND gameId == :gameID ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
+			map[string]interface{}{"keyword": "%" + keyword + "%", "limit": limit, "offset": offset, "gameID": gameId, "sectionId": sectionId})
+
+	} else {
+		r, err = s.db.NamedQuery(`SELECT * FROM modinfo WHERE name LIKE :keyword AND gameId == :gameID AND gameCategoryId == :sectionId  ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
+			map[string]interface{}{"keyword": "%" + keyword + "%", "limit": limit, "offset": offset, "gameID": gameId, "sectionId": sectionId})
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("Search: %w", err)
+	}
+	defer r.Close()
+	for r.Next() {
+		var m ModInfo
+		err := r.StructScan(&m)
+		if err != nil {
+			return nil, fmt.Errorf("Search: %w", err)
+		}
+		mods = append(mods, m)
+	}
+	err = r.Err()
+	if err != nil {
+		return nil, fmt.Errorf("Search: %w", err)
+	}
+	return mods, nil
+}
