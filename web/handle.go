@@ -215,6 +215,11 @@ func (s *server) modfile(downloadUrl bool) func(w http.ResponseWriter, r *http.R
 				break
 			}
 		}
+		if d == nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
 		if downloadUrl {
 			url, ok := d["downloadUrl"].(string)
 			if !ok {
