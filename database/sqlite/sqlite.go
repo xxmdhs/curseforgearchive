@@ -24,7 +24,6 @@ func NewSqlite(path string) (*Sqlite, error) {
 		name TEXT NOT NULL,
 		downloadCount INT NOT NULL,
 		gameId INT NOT NULL,
-		gameId INT NOT NULL,
 		gameCategoryId INT NOT NULL,
 		gamePopularityRank INT NOT NULL,
 		dateCreated INT NOT NULL,
