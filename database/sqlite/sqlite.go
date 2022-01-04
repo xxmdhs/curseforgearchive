@@ -71,12 +71,16 @@ func (s *Sqlite) Search(keyword string, limit, gameId, offset, sectionId int, OR
 	var mods []ModInfo
 	var r *sqlx.Rows
 	var err error
+	asql := `SELECT * FROM modinfo WHERE name LIKE :keyword AND gameId == :gameID`
 	if sectionId == 0 {
-		r, err = s.db.NamedQuery(`SELECT * FROM modinfo WHERE name LIKE :keyword AND gameId == :gameID ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
+		r, err = s.db.NamedQuery(asql+` ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
 			map[string]interface{}{"keyword": "%" + keyword + "%", "limit": limit, "offset": offset, "gameID": gameId, "sectionId": sectionId})
 
+	} else if ORDERBy == "gamePopularityRank" {
+		r, err = s.db.NamedQuery(asql+` AND gameCategoryId == :sectionId  ORDER BY "`+ORDERBy+`" LIMIT :limit OFFSET :offset`,
+			map[string]interface{}{"keyword": "%" + keyword + "%", "limit": limit, "offset": offset, "gameID": gameId, "sectionId": sectionId})
 	} else {
-		r, err = s.db.NamedQuery(`SELECT * FROM modinfo WHERE name LIKE :keyword AND gameId == :gameID AND gameCategoryId == :sectionId  ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
+		r, err = s.db.NamedQuery(asql+` AND gameCategoryId == :sectionId  ORDER BY "`+ORDERBy+`" DESC LIMIT :limit OFFSET :offset`,
 			map[string]interface{}{"keyword": "%" + keyword + "%", "limit": limit, "offset": offset, "gameID": gameId, "sectionId": sectionId})
 	}
 

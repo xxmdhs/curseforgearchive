@@ -21,7 +21,6 @@ func NewServer(addr string, db *database.LevelDB, sqlite *sqlite.Sqlite) error {
 
 	r.GET("/api/v2/addon/:addonID", server.mod("modinfo-"))
 	r.GET("/api/v2/addon/:addonID/files", server.mod("modfiles-"))
-	r.GET("/api/v2/addon/search", server.search)
 
 	s := http.Server{
 		Addr:              addr,
@@ -66,6 +65,11 @@ func (s *server) mod(prefix string) func(w http.ResponseWriter, r *http.Request,
 		addonID := p.ByName("addonID")
 		if addonID == "" {
 			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if addonID == "search" {
+			s.search(w, r, p)
 			return
 		}
 
