@@ -15,9 +15,19 @@ func NewServer(addr string, db *database.LevelDB, sqlite *sqlite.Sqlite) error {
 	server := newServer(db, sqlite)
 	defer server.Close()
 
+	r.RedirectFixedPath = false
+	r.RedirectTrailingSlash = false
+
+	r.GET("/api/v2/addon/:addonID/", server.mod("modinfo-"))
 	r.GET("/api/v2/addon/:addonID", server.mod("modinfo-"))
+
+	r.GET("/api/v2/addon/:addonID/files/", server.mod("modfiles-"))
 	r.GET("/api/v2/addon/:addonID/files", server.mod("modfiles-"))
+
+	r.GET("/api/v2/addon/:addonID/file/:fileId/", server.modfile(false))
 	r.GET("/api/v2/addon/:addonID/file/:fileId", server.modfile(false))
+
+	r.GET("/api/v2/addon/:addonID/file/:fileId/download-url/", server.modfile(true))
 	r.GET("/api/v2/addon/:addonID/file/:fileId/download-url", server.modfile(true))
 
 	s := http.Server{
