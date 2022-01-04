@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/xxmdhs/curseforgearchive/curseapi"
 	"github.com/xxmdhs/curseforgearchive/database"
+	"github.com/xxmdhs/curseforgearchive/database/sqlite"
+	"github.com/xxmdhs/curseforgearchive/web"
 )
 
 func main() {
@@ -25,6 +28,15 @@ func main() {
 	db, err := database.NewLevelDB("./data")
 	e(err)
 	defer db.Close()
+
+	if server {
+		sqlite, err := sqlite.NewSqlite("./data.db")
+		e(err)
+		defer sqlite.Close()
+		err = web.NewServer(addr, db, sqlite)
+		e(err)
+		return
+	}
 
 	start := 0
 	if !c.Reacquire {
@@ -39,6 +51,17 @@ func main() {
 		}
 	}
 	do(c.MaxID, start, db)
+}
+
+var (
+	addr   string
+	server bool
+)
+
+func init() {
+	flag.StringVar(&addr, "addr", "127.0.0.1:8080", "http service address")
+	flag.BoolVar(&server, "server", false, "run as server")
+	flag.Parse()
 }
 
 func do(maxpage, start int, db *database.LevelDB) {
