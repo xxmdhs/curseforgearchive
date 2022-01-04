@@ -7,7 +7,7 @@ import (
 )
 
 type LevelDB struct {
-	db *leveldb.DB
+	Db *leveldb.DB
 }
 
 func NewLevelDB(path string) (*LevelDB, error) {
@@ -16,12 +16,12 @@ func NewLevelDB(path string) (*LevelDB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewLevelDB: %w", err)
 	}
-	l.db = db
+	l.Db = db
 	return l, nil
 }
 
 func (l *LevelDB) Close() error {
-	err := l.db.Close()
+	err := l.Db.Close()
 	if err != nil {
 		return fmt.Errorf("LevelDB.Close: %w", err)
 	}
@@ -29,7 +29,7 @@ func (l *LevelDB) Close() error {
 }
 
 func (l *LevelDB) Get(key string) ([]byte, error) {
-	val, err := l.db.Get([]byte(key), nil)
+	val, err := l.Db.Get([]byte(key), nil)
 	if err != nil {
 		return nil, fmt.Errorf("LevelDB.Get: %w", err)
 	}
@@ -37,7 +37,7 @@ func (l *LevelDB) Get(key string) ([]byte, error) {
 }
 
 func (l *LevelDB) Put(key string, value []byte) error {
-	err := l.db.Put([]byte(key), value, nil)
+	err := l.Db.Put([]byte(key), value, nil)
 	if err != nil {
 		return fmt.Errorf("LevelDB.Put: %w", err)
 	}
